@@ -1,0 +1,241 @@
+:root {
+  --page-bg: linear-gradient(145deg, #f4f8f3 0%, #eef5f1 45%, #f7f2e9 100%);
+  --panel-bg: #ffffff;
+  --panel-border: #d6e2d9;
+  --text-main: #16261f;
+  --text-muted: #5f6f65;
+  --accent: #0b7d67;
+  --accent-deep: #095f4f;
+  --accent-soft: #d9f3ec;
+  --danger: #a5382b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Avenir Next", "Trebuchet MS", "Segoe UI", sans-serif;
+  background: var(--page-bg);
+  color: var(--text-main);
+}
+
+.app-shell {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 32px 20px 48px;
+  display: grid;
+  gap: 18px;
+}
+
+.app-header h1 {
+  margin: 0 0 8px;
+  letter-spacing: 0.02em;
+}
+
+.app-header p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: 0 8px 24px rgba(15, 42, 27, 0.05);
+}
+
+.panel h2 {
+  margin: 0 0 14px;
+  font-size: 1.1rem;
+}
+
+.drop-zone {
+  border: 2px dashed #7db7a7;
+  border-radius: 12px;
+  padding: 28px 16px;
+  text-align: center;
+  background: #f9fcfa;
+  transition: background-color 120ms ease, border-color 120ms ease, transform 120ms ease;
+  cursor: pointer;
+}
+
+.drop-zone:hover,
+.drop-zone:focus-visible {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  outline: none;
+}
+
+.drop-zone.drag-active {
+  background: var(--accent-soft);
+  border-color: var(--accent-deep);
+  transform: translateY(-1px);
+}
+
+.drop-zone p {
+  margin: 0;
+}
+
+.drop-hint {
+  margin: 8px 0;
+  color: var(--text-muted);
+}
+
+.status-text {
+  margin: 12px 0 0;
+  min-height: 20px;
+  color: var(--text-muted);
+}
+
+.status-text.error {
+  color: var(--danger);
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.panel-header p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.mapping-form {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(220px, 1fr) auto;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.mapping-form input,
+.clean-input {
+  border: 1px solid #c4d5cc;
+  border-radius: 9px;
+  padding: 8px 10px;
+  font-size: 0.92rem;
+  font-family: inherit;
+}
+
+.mapping-form input:focus,
+.clean-input:focus {
+  outline: 2px solid rgba(11, 125, 103, 0.25);
+  border-color: var(--accent);
+}
+
+.mapping-table,
+.preview-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.mapping-table th,
+.mapping-table td,
+.preview-table th,
+.preview-table td {
+  border-bottom: 1px solid #e4ece7;
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.mapping-table th,
+.preview-table th {
+  background: #f5faf7;
+  font-weight: 700;
+}
+
+.empty-note,
+.empty-preview {
+  color: var(--text-muted);
+  text-align: center;
+  padding: 14px 10px;
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.preview-header h2 {
+  margin: 0;
+}
+
+.preview-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.preview-wrap {
+  overflow-x: auto;
+}
+
+.preview-table {
+  min-width: 940px;
+}
+
+.clean-input {
+  width: 100%;
+  min-width: 250px;
+}
+
+.button-primary,
+.button-secondary,
+.delete-mapping {
+  border: none;
+  border-radius: 9px;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: transform 120ms ease, opacity 120ms ease, background-color 120ms ease;
+}
+
+.button-primary {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.button-primary:hover:not(:disabled) {
+  background: var(--accent-deep);
+  transform: translateY(-1px);
+}
+
+.button-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.button-secondary,
+.delete-mapping {
+  background: #eaf2ee;
+  color: var(--text-main);
+}
+
+.button-secondary:hover,
+.delete-mapping:hover {
+  background: #d8e8e0;
+}
+
+@media (max-width: 860px) {
+  .mapping-form {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-table {
+    min-width: 760px;
+  }
+}

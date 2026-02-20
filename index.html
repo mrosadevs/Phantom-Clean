@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bank Transaction Cleaner</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js" defer></script>
+  <script src="./cleaning.js" defer></script>
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="app-header">
+      <h1>Bank Transaction Cleaner</h1>
+      <p>Upload one or more CSV files, review clean names, then export formatted Excel.</p>
+    </header>
+
+    <section class="panel">
+      <h2>Upload CSV</h2>
+      <div id="drop-zone" class="drop-zone" role="button" tabindex="0" aria-label="Upload CSV files">
+        <p>Drag and drop CSV files here</p>
+        <p class="drop-hint">or</p>
+        <button type="button" id="browse-button" class="button-secondary">Choose files</button>
+        <input id="file-input" type="file" accept=".csv,text/csv" multiple hidden>
+      </div>
+      <p id="status-text" class="status-text" aria-live="polite"></p>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <h2>Custom Name Mapping</h2>
+        <p>Applied after cleaning. Saved in your browser.</p>
+      </div>
+      <form id="mapping-form" class="mapping-form">
+        <input id="mapping-from" type="text" placeholder="From name" required>
+        <input id="mapping-to" type="text" placeholder="To name" required>
+        <button type="submit" class="button-primary">Add Mapping</button>
+      </form>
+      <table class="mapping-table">
+        <thead>
+          <tr>
+            <th>From</th>
+            <th>To</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="mapping-body"></tbody>
+      </table>
+      <p id="mapping-empty" class="empty-note">No custom mappings yet.</p>
+    </section>
+
+    <section class="panel">
+      <div class="preview-header">
+        <h2>Preview</h2>
+        <div class="preview-actions">
+          <button type="button" id="clear-button" class="button-secondary">Clear All Rows</button>
+          <button type="button" id="download-button" class="button-primary" disabled>Download Excel</button>
+        </div>
+      </div>
+      <div class="preview-wrap">
+        <table class="preview-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>clean transactions</th>
+              <th>amount</th>
+              <th>orginal transactons</th>
+            </tr>
+          </thead>
+          <tbody id="preview-body">
+            <tr>
+              <td colspan="4" class="empty-preview">No transactions loaded yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
