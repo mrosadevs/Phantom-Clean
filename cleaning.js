@@ -111,6 +111,87 @@
     return normalizeSpaces(memo.replace(/^Zelle payment to\s+/i, ""));
   }
 
+  function cleanFormatBZelleFromWithMemo(memo) {
+    const match = memo.match(/^Zelle payment from\s+(.+?)\s+for\s+".*$/i);
+    return match ? normalizeSpaces(match[1]) : "";
+  }
+
+  function cleanFormatBZelleFrom(memo) {
+    const match = memo.match(/^Zelle payment from\s+(.+?)\s+Conf#.*$/i);
+    return match ? normalizeSpaces(match[1]) : "";
+  }
+
+  function cleanFormatBZelleToWithMemo(memo) {
+    const match = memo.match(/^Zelle payment to\s+(.+?)\s+for\s+".*$/i);
+    return match ? normalizeSpaces(match[1]) : "";
+  }
+
+  function cleanFormatBZelleTo(memo) {
+    const match = memo.match(/^Zelle payment to\s+(.+?)\s+Conf#.*$/i);
+    return match ? normalizeSpaces(match[1]) : "";
+  }
+
+  function cleanFormatBTransferFromChk(memo, prefixPattern) {
+    const match = memo.match(prefixPattern);
+    if (!match) {
+      return "";
+    }
+
+    const nameSegment = normalizeSpaces(match[1]);
+    if (!nameSegment) {
+      return "";
+    }
+
+    const commaParts = nameSegment.split(/\s*,\s*/).map(normalizeSpaces).filter(Boolean);
+    if (commaParts.length >= 2) {
+      const left = commaParts[0];
+      const right = normalizeSpaces(commaParts.slice(1).join(" "));
+      if (normalizeLookupKey(left) === normalizeLookupKey(right)) {
+        return left;
+      }
+      return normalizeSpaces(`${right} ${left}`);
+    }
+
+    return nameSegment;
+  }
+
+  function cleanFormatBMobileTransferFromChk(memo) {
+    return cleanFormatBTransferFromChk(
+      memo,
+      /^Mobile transfer from CHK\s+\d+\s+Confirmation#\s*\S+;\s*(.*)$/i
+    );
+  }
+
+  function cleanFormatBOnlineTransferFromChk(memo) {
+    return cleanFormatBTransferFromChk(
+      memo,
+      /^Online transfer from CHK\s+\d+\s+Confirmation#\s*\S+;\s*(.*)$/i
+    );
+  }
+
+  function cleanFormatBOnlineTransferToChk(memo) {
+    const match = memo.match(/^Online transfer to CHK\s*(\d+)\s+Confirmation#.*$/i);
+    return match ? `Transfer to CHK ${match[1]}` : "";
+  }
+
+  function cleanFormatBWireIn(memo) {
+    const match = memo.match(/\bORIG:(.+?)\s+ID:/i);
+    return match ? normalizeSpaces(match[1]) : "";
+  }
+
+  function cleanFormatBWireOut(memo) {
+    const match = memo.match(/\bBNF:(.+?)\s+ID:/i);
+    return match ? normalizeSpaces(match[1]) : "";
+  }
+
+  function cleanFormatBTransferName(memo) {
+    const match = memo.match(/^TRANSFER\s+(.+?):(.+?)\s+Confirmation#/i);
+    if (!match) {
+      return "";
+    }
+    return `${normalizeSpaces(match[1])} to ${normalizeSpaces(match[2])}`;
+  }
+
   function cleanIncomingZelle(memo) {
     let name = normalizeSpaces(memo.replace(/^Zelle Payment From\s+/i, ""));
     const referencePattern = new RegExp(
@@ -317,11 +398,47 @@
     return "";
   }
 
+  function cleanOtherWithdrawalAdjustment(memo) {
+    const match = memo.match(/^OTHER\/WITHDRAWAL\/ADJ\b.*?\bNAME[:\s]+(.+)$/i);
+    if (!match) {
+      return "";
+    }
+    return normalizeSpaces(match[1]);
+  }
+
   function cleanMemo(memo, customMappings) {
     const rawMemo = normalizeSpaces(memo);
     let cleaned = rawMemo;
 
-    if (/^WT\s+\d+/i.test(rawMemo)) {
+    // Format B rules (Bank of America style) in priority order.
+    if (/^Zelle payment from\s+.+\s+for\s+"/i.test(rawMemo)) {
+      cleaned = cleanFormatBZelleFromWithMemo(rawMemo) || rawMemo;
+    } else if (/^Zelle payment from\s+.+\s+Conf#/i.test(rawMemo)) {
+      cleaned = cleanFormatBZelleFrom(rawMemo) || rawMemo;
+    } else if (/^Zelle payment to\s+.+\s+for\s+"/i.test(rawMemo)) {
+      cleaned = cleanFormatBZelleToWithMemo(rawMemo) || rawMemo;
+    } else if (/^Zelle payment to\s+.+\s+Conf#/i.test(rawMemo)) {
+      cleaned = cleanFormatBZelleTo(rawMemo) || rawMemo;
+    } else if (/^Mobile transfer from CHK\s+\d+\s+Confirmation#/i.test(rawMemo)) {
+      cleaned = cleanFormatBMobileTransferFromChk(rawMemo) || rawMemo;
+    } else if (/^Online transfer from CHK\s+\d+\s+Confirmation#/i.test(rawMemo)) {
+      cleaned = cleanFormatBOnlineTransferFromChk(rawMemo) || rawMemo;
+    } else if (/^Online transfer to CHK\s+\d+\s+Confirmation#/i.test(rawMemo)) {
+      cleaned = cleanFormatBOnlineTransferToChk(rawMemo) || rawMemo;
+    } else if (/^WIRE TYPE:WIRE IN\b/i.test(rawMemo)) {
+      cleaned = cleanFormatBWireIn(rawMemo) || rawMemo;
+    } else if (/^WIRE TYPE:WIRE OUT\b/i.test(rawMemo)) {
+      cleaned = cleanFormatBWireOut(rawMemo) || rawMemo;
+    } else if (/^TRANSFER\s+.+?:.+?\s+Confirmation#/i.test(rawMemo)) {
+      cleaned = cleanFormatBTransferName(rawMemo) || rawMemo;
+    } else if (/^External transfer fee\b/i.test(rawMemo)) {
+      cleaned = "External Transfer Fee";
+    } else if (/^Wire Transfer Fee$/i.test(rawMemo)) {
+      cleaned = "Wire Transfer Fee";
+    } else if (/\sDES:/i.test(rawMemo)) {
+      cleaned = cleanDesFormattedPayment(rawMemo) || rawMemo;
+    } else if (/^WT\s+\d+/i.test(rawMemo)) {
+      // Format A rules (legacy Chase/Wells Fargo style).
       cleaned = cleanOutgoingWtWire(rawMemo) || rawMemo;
     } else if (/^Zelle to\s+/i.test(rawMemo)) {
       cleaned = cleanOutgoingZelleSimple(rawMemo) || rawMemo;
@@ -349,8 +466,6 @@
         cleaned = cleanOnlineInternationalWireTransfer(rawMemo) || rawMemo;
       } else if (rawMemo.startsWith("Orig CO Name:")) {
         cleaned = cleanAchOrigCoName(rawMemo) || rawMemo;
-      } else if (rawMemo.includes(" DES:")) {
-        cleaned = cleanDesFormattedPayment(rawMemo) || rawMemo;
       } else if (/^(Purchase authorized on|Recurring Payment authorized on|Purchase Intl authorized on)\s+/i.test(rawMemo)) {
         cleaned = cleanAuthorizedCardPurchase(rawMemo) || rawMemo;
       } else if (rawMemo.startsWith("PURCHASE ")) {
@@ -359,6 +474,8 @@
         cleaned = cleanCheckcardLegacy(rawMemo) || rawMemo;
       } else if (rawMemo.includes("Business to Business ACH Debit")) {
         cleaned = cleanBusinessToBusinessAchDebit(rawMemo) || rawMemo;
+      } else if (/^OTHER\/WITHDRAWAL\/ADJ\b/i.test(rawMemo)) {
+        cleaned = cleanOtherWithdrawalAdjustment(rawMemo) || rawMemo;
       } else if (rawMemo.startsWith("SERVICE CHARGE ACCT")) {
         cleaned = rawMemo;
       } else {
