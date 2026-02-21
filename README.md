@@ -1,4 +1,4 @@
-# Phantom Cleaner
+# Accuracy Phantom Cleaner
 
 Single-page web app to clean raw bank transaction CSVs and export a formatted Excel file.
 
